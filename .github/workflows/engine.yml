@@ -1,0 +1,25 @@
+name: engine
+
+on:
+  push:
+    paths:
+      - 'packages/truco_engine/**'
+      - '.github/workflows/engine.yml'
+  pull_request:
+    paths:
+      - 'packages/truco_engine/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/truco_engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      - run: dart analyze --fatal-infos
+      - run: dart test

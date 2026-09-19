@@ -1,0 +1,10 @@
+name: truco_engine
+description: Motor de Truco argentino en Dart puro (sin Flutter). Reglas, partida y protocolo de sala.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.32.0
