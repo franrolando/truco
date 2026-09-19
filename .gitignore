@@ -1,6 +1,6 @@
 .dart_tool/
 .packages
-pubspec.lock
+packages/*/pubspec.lock
 build/
 *.iml
 .idea/

@@ -1,0 +1,81 @@
+name: app-builds
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'packages/truco_engine/**'
+      - '.github/workflows/app-builds.yml'
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.47.5'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  android:
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: truco-android-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+
+  # IPA sin firmar: se firma en Windows con Sideloadly y un Apple ID gratuito.
+  ios:
+    needs: test
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
+      - name: Empaquetar .ipa sin firmar
+        run: |
+          rm -rf Payload truco.ipa
+          mkdir Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qr truco.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: truco-ios-ipa
+          path: app/truco.ipa
